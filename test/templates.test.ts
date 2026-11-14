@@ -92,28 +92,38 @@ const REQUIRED: Record<string, string[]> = {
   ],
 };
 
-const VARS = [
-  "ticket=#1",
-  "topic=見本の題",
-  "question=見本の問い",
-  "options=3",
-  "proposal=<提案の URL>",
-  "choice=案 2",
-  "plan=<計画の URL>",
-  "answers=無し（全部既定）",
-];
+const VARS: Record<string, string[]> = {
+  explain: ["ticket=#1", "topic=見本の題", "question=見本の問い"],
+  propose: ["ticket=#1", "topic=見本の題", "options=3"],
+  plan: ["ticket=#1", "topic=見本の題", "proposal=<提案の URL>", "choice=案 2"],
+  execute: ["ticket=#1", "topic=見本の題", "plan=<計画の URL>", "answers=無し（全部既定）"],
+};
 
 describe("依頼の雛形", () => {
   it.each(Object.keys(REQUIRED))("%s は必ず入るべき決まりを全部持ち、穴が残らない", (name) => {
-    const text = buildRequest(REPO, profile, { template: name, vars: VARS }, () => "");
+    const text = buildRequest(REPO, profile, { template: name, vars: VARS[name] ?? [] }, () => "");
     for (const heading of REQUIRED[name] ?? []) expect(text).toContain(heading);
     expect(text).not.toMatch(/\{\{|\}\}/);
     expect(text).not.toMatch(/\n{3,}/);
   });
 
   it.each(Object.keys(REQUIRED))("%s を見本の値で組み立てた文は、正の文と同じ", async (name) => {
-    const text = buildRequest(REPO, profile, { template: name, vars: VARS }, () => "");
+    const text = buildRequest(REPO, profile, { template: name, vars: VARS[name] ?? [] }, () => "");
     await expect(text).toMatchFileSnapshot(`golden/${name}.md`);
+  });
+
+  it("雛形が受けない --var は、受ける名前を挙げて止まる", () => {
+    const vars = [...(VARS["plan"] ?? []), "question=x"];
+    expect(() => buildRequest(REPO, profile, { template: "plan", vars }, () => "")).toThrow(
+      /--var question を受けない/,
+    );
+  });
+
+  it("profile の値の鍵は --var で替えられる", () => {
+    const vars = [...(VARS["plan"] ?? []), "issueTracker=別の置き場"];
+    expect(buildRequest(REPO, profile, { template: "plan", vars }, () => "")).toContain(
+      "別の置き場",
+    );
   });
 
   it("雛形に要る値が --var に無ければ、その名前を言って止まる", () => {

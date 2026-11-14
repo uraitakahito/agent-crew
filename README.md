@@ -11,7 +11,9 @@ Claude Code の役（Technical Program Manager・DevOps Engineer・Software Engi
 
 ```sh
 pnpm install && pnpm run build
-export CREW_PROFILE=<profile の名前>   # ~/.config/agent-crew/profiles/<名前>/profile.json
+bin/crew profile init <名前>          # 見本の profile を ~/.config/agent-crew/profiles/<名前>/ に写す（値を書き替える）
+export CREW_PROFILE=<名前>
+bin/crew profile check                # 役と雛形を全部組み立てられるかを見る
 
 # 新しい workspace に役を起こし、依頼を渡す（モデル・effort・決めた人は毎回渡す。無ければ止まる）
 bin/crew launch --role-file <役のファイル> --model claude-opus-5-5 --effort high --decided-by tpm --request <依頼のファイル>
@@ -64,6 +66,10 @@ bin/crew launch --role engineer --template execute --var ticket=<作業項目> -
 - プロジェクト固有の決まりは、profile の `partials/project-rules.md` に書きます（部品は profile の `partials/` が先、無ければ repo の物）。
 - `{{?名前}}` は任意の穴です（値が無ければ空）。
 - 依頼の文の頭には、モデル・effort・決めた人の 1 行が入ります。`--reason <文>` で決めた理由も入れられます。
+
+## profile
+
+環境ごとに違う値（宛先・作業項目の置き場・共有の開発環境の名前・プロジェクト固有の決まりなど）は profile に集めます。鍵の一覧と `crew profile check` の仕組みは [docs/profile.md](docs/profile.md)。
 
 ## 公開の repo です
 

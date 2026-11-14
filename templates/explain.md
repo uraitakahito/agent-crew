@@ -1,6 +1,7 @@
 ---
 title: 解説
 description: 仕組みや事実を調べて、読み手が判断できる形にまとめる
+vars: ticket, topic, question, notes?
 ---
 
 # 解説の依頼: {{topic}}

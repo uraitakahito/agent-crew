@@ -1,6 +1,7 @@
 ---
 title: 提案
 description: 案をいくつか出し、比べて、推しを言う
+vars: ticket, topic, options, notes?
 ---
 
 # 提案の依頼: {{topic}}
