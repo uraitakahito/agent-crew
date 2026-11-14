@@ -7,6 +7,8 @@ import { CrewError } from "./errors.js";
 import { CmuxLauncher } from "./launchers/cmux/launcher.js";
 import { createLogger } from "./log.js";
 import { loadProfile, resolveChoice } from "./profile/profile.js";
+import { loadRole } from "./roles.js";
+import { buildRequest } from "./templates.js";
 
 const log = createLogger();
 const { repoDir, distDir } = locations();
@@ -17,8 +19,13 @@ interface CommonOptions {
   model?: string;
   effort?: string;
   decidedBy?: string;
+  reason?: string;
   request?: string;
+  template?: string;
+  var: string[];
 }
+
+const collect = (value: string, previous: string[]) => [...previous, value];
 
 function addCommon(command: Command): Command {
   return command
@@ -26,7 +33,10 @@ function addCommon(command: Command): Command {
     .option("--model <id>", "モデル（例 claude-opus-5-5）。必須")
     .option("--effort <段>", "effort（例 high）。必須")
     .option("--decided-by <pm|tpm>", "モデルと effort を決めた人。必須")
-    .option("--request <ファイル|->", "渡す依頼の文（- なら標準入力）");
+    .option("--reason <文>", "モデルと effort を決めた理由（1 句。依頼の文の頭の行に入る）")
+    .option("--request <ファイル|->", "渡す依頼の文（- なら標準入力）")
+    .option("--template <名前>", "依頼の雛形（templates/<名前>.md）。--request の代わり")
+    .option("--var <鍵=値>", "雛形の穴に入れる値（何度でも）", collect, []);
 }
 
 const program = new Command()
@@ -58,10 +68,10 @@ addCommon(
     const profile = loadProfile(options.profile);
     const model = resolveChoice(profile, decision.model, decision.effort);
     const role = prepareRole(repoDir, profile, options.role, options.roleFile);
-    const request =
-      options.request === undefined
-        ? undefined
-        : withDecisionLine(decision, readRequest(options.request, readStdin));
+    const body = buildRequest(repoDir, profile, { ...options, vars: options.var }, (path) =>
+      readRequest(path, readStdin),
+    );
+    const request = body === undefined ? undefined : withDecisionLine(decision, body);
     const launcher = new CmuxLauncher({ log });
     const target = await launcher.launch({
       name: options.name ?? `crew ${role.name}`,
@@ -92,10 +102,10 @@ addCommon(
   checkBuild({ repoDir, distDir });
   const profile = loadProfile(options.profile);
   const model = resolveChoice(profile, decision.model, decision.effort);
-  const request =
-    options.request === undefined
-      ? undefined
-      : withDecisionLine(decision, readRequest(options.request, readStdin));
+  const body = buildRequest(repoDir, profile, { ...options, vars: options.var }, (path) =>
+    readRequest(path, readStdin),
+  );
+  const request = body === undefined ? undefined : withDecisionLine(decision, body);
   await new CmuxLauncher({ log }).send(options.to, {
     model,
     effort: decision.effort,
@@ -105,6 +115,47 @@ addCommon(
     `${JSON.stringify({ workspace: options.to, model: decision.model, effort: decision.effort, decided_by: decision.decidedBy })}\n`,
   );
 });
+
+program
+  .command("render")
+  .description("雛形か役の定義の穴を埋めて、標準出力に出す（起こさない・送らない）")
+  .option("--profile <名前|パス>", "環境ごとの値（既定は環境変数 CREW_PROFILE）")
+  .option("--template <名前>", "依頼の雛形（templates/<名前>.md）")
+  .option("--role <名前>", "役の定義（roles/<名前>.md）")
+  .option("--var <鍵=値>", "雛形の穴に入れる値（何度でも）", collect, [])
+  .option("--model <id>", "渡せば、依頼の文の頭に決めた人の 1 行を入れる")
+  .option("--effort <段>")
+  .option("--decided-by <pm|tpm>")
+  .option("--reason <文>")
+  .action(
+    (options: {
+      profile?: string;
+      template?: string;
+      role?: string;
+      var: string[];
+      model?: string;
+      effort?: string;
+      decidedBy?: string;
+      reason?: string;
+    }) => {
+      checkBuild({ repoDir, distDir });
+      const profile = loadProfile(options.profile);
+      if ((options.template === undefined) === (options.role === undefined)) {
+        throw new CrewError("--template か --role のどちらか 1 つを渡してください");
+      }
+      if (options.role !== undefined) {
+        process.stdout.write(loadRole(repoDir, options.role, profile).text);
+        return;
+      }
+      const body = buildRequest(repoDir, profile, { ...options, vars: options.var }, () => "");
+      const decided =
+        options.model !== undefined ||
+        options.effort !== undefined ||
+        options.decidedBy !== undefined;
+      const text = decided ? withDecisionLine(requireDecision(options), body ?? "") : (body ?? "");
+      process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
+    },
+  );
 
 try {
   await program.parseAsync();

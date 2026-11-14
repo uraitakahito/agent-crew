@@ -14,11 +14,15 @@ export interface Decision {
   readonly model: string;
   readonly effort: string;
   readonly decidedBy: Decider;
+  /** 決めた理由（1 句）。TPM 役が決めたときは書く。 */
+  readonly reason?: string;
 }
 
 /** 依頼の文の頭に入れる 1 行。起動の後に、画面の起動の行と照らす。 */
 export function decisionLine(decision: Decision): string {
-  return `- モデル: ${decision.model} ／ effort: ${decision.effort} ／ 決めた人: ${DECIDERS[decision.decidedBy]}`;
+  const reason =
+    decision.reason === undefined || decision.reason === "" ? "" : `（${decision.reason}）`;
+  return `- モデル: ${decision.model} ／ effort: ${decision.effort} ／ 決めた人: ${DECIDERS[decision.decidedBy]}${reason}`;
 }
 
 /** 依頼の文に決めた人の 1 行を足す。 */

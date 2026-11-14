@@ -56,15 +56,32 @@ export function loadRole(repoDir: string, name: string, profile: Profile): Role 
   } catch {
     throw new CrewError(`役 "${name}" の定義が無い: ${source}`);
   }
-  return parseRole(name, text, profile, `roles/${name}.md`, (p) => readPartial(repoDir, p));
+  return parseRole(name, text, profile, `roles/${name}.md`, (p) =>
+    readPartial(repoDir, p, profile.dir),
+  );
 }
 
-export function readPartial(repoDir: string, name: string): string | undefined {
-  try {
-    return readFileSync(join(repoDir, "templates", "partials", `${name}.md`), "utf8");
-  } catch {
-    return undefined;
+/**
+ * 部品を読む。profile の partials/ に在ればそれを（プロジェクト固有の決まりなど）、
+ * 無ければ repo の templates/partials/ の物を使う。
+ */
+export function readPartial(
+  repoDir: string,
+  name: string,
+  profileDir?: string,
+): string | undefined {
+  const places = [
+    ...(profileDir === undefined ? [] : [join(profileDir, "partials", `${name}.md`)]),
+    join(repoDir, "templates", "partials", `${name}.md`),
+  ];
+  for (const path of places) {
+    try {
+      return readFileSync(path, "utf8");
+    } catch {
+      // 次の場所へ
+    }
   }
+  return undefined;
 }
 
 /** 組み立てた物を置く所（本物の値を含むので、repo の外）。 */
