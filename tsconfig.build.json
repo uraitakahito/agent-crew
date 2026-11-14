@@ -1,0 +1,14 @@
+{
+  // Inherits all options from tsconfig.json; the overrides below switch
+  // emit on and pin the build output layout.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    // Preserves the src/ -> dist/ directory mapping
+    "rootDir": "src",
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*.test.ts"]
+}

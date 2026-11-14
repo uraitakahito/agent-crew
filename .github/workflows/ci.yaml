@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # edited: PR の題と本文を書き換えたときにも、混入の検査を流し直す。
+    types: [opened, synchronize, reopened, edited]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # commit の文の検査に、base からの履歴が要る。
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      # 手元で打つ物と同じ。検査を足すときは package.json の check に足す。
+      - run: pnpm run check
+      # PR の題・本文・commit の文は、squash で main の履歴に残る。ファイルと同じ形で照らす。
+      # 値は env で渡す（run: の中に式で埋め込むと、本文が shell として読まれる）。
+      - name: PR の題と本文と commit の文の混入の検査
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" > "$RUNNER_TEMP/pull-request.txt"
+          node dist/tools/check-private.js --commits "$BASE_SHA..$HEAD_SHA" --extra-file "$RUNNER_TEMP/pull-request.txt"
+
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # 個人の repo では鍵 (GITLEAKS_LICENSE) が要らない。organization の repo へ持って行くなら要る。
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

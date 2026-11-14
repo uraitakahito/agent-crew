@@ -1,0 +1,63 @@
+{
+  "//": [
+    "package.json にコメントを書く方法の議論 (npm は `//` という鍵を使わないと決めている):",
+    "https://stackoverflow.com/questions/14221579/how-do-i-add-comments-to-package-json-for-npm-install",
+    "",
+    "ここに書くのは、下の JSON を読んでも分からないことだけ。",
+    "",
+    "## version は版ではない",
+    "リリースの版は git のタグ (vX.Y.Z) だけが持つ。version は 0.0.0 のまま上げない。",
+    "",
+    "## 依存は 2 つだけに保つ",
+    "commander (命令の引数) と pino (ログ)。雛形の穴埋めや設定の読み書きのために依存を足さない",
+    "(profile は JSON にして node の JSON.parse で読む)。",
+    "",
+    "## scripts で踏みやすいこと",
+    "check: push の前に走らせる全部。CI (`.github/workflows/ci.yaml`) も同じ命令を呼ぶ。",
+    "検査を足すときは check に足す (CI の側に直に足さない)。",
+    "check:private: 本物の値 (UUID・ホームの絶対パス・メールアドレスなど) の混入を形で探す",
+    "(`src/tools/check-private.ts`)。build の後に走る (dist の物を呼ぶ)。",
+    "",
+    "## ここに無いもの",
+    "pnpm の版: packageManager が唯一の出どころ。CI (pnpm/action-setup) もここから読む。",
+    "Node の版は .nvmrc と engines を揃えて上げる (CI は .nvmrc を読む)。"
+  ],
+  "name": "agent-crew",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Claude Code の役を起こし、雛形から組み立てた依頼を渡す道具",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "packageManager": "pnpm@11.26.0",
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "audit": "pnpm audit --audit-level=low",
+    "check:private": "node dist/tools/check-private.js",
+    "check": "pnpm run audit && pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build && pnpm run check:private"
+  },
+  "dependencies": {
+    "commander": "^15.1.0",
+    "pino": "^10.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  }
+}
