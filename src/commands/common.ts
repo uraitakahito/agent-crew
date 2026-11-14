@@ -1,7 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { isDecider, type Decision } from "../decision.js";
 import { CrewError } from "../errors.js";
+import type { Profile } from "../profile/profile.js";
+import { loadRole, writeRendered } from "../roles.js";
 
 export interface DecisionOptions {
   readonly model?: string;
@@ -50,23 +52,35 @@ export function readFileSafe(path: string, what: string): string {
   }
 }
 
-/** --role <名前> は repo の roles/<名前>.md、--role-file はそのパス。 */
-export function resolveRoleFile(
+export interface PreparedRole {
+  readonly name: string;
+  /** --append-system-prompt-file に渡すファイル。 */
+  readonly path: string;
+  readonly permissionMode: string;
+}
+
+/**
+ * --role <名前> は repo の roles/<名前>.md の穴を profile の値で埋め、repo の外に書いて渡す。
+ * --role-file <パス> は、そのファイルをそのまま渡す（穴は埋めない）。
+ */
+export function prepareRole(
   repoDir: string,
+  profile: Profile,
   role?: string,
   roleFile?: string,
-): { name: string; path: string } {
+  write: (name: string, text: string) => string = (name, text) =>
+    writeRendered("roles", name, text),
+): PreparedRole {
   if (role !== undefined && roleFile !== undefined) {
     throw new CrewError("--role と --role-file は片方だけにしてください");
   }
   if (roleFile !== undefined) {
     const path = resolve(roleFile);
     if (!existsSync(path)) throw new CrewError(`役のファイルが無い: ${path}`);
-    return { name: "custom", path };
+    return { name: "custom", path, permissionMode: profile.permissionMode };
   }
   if (role === undefined)
     throw new CrewError("役を渡してください（--role <名前> か --role-file <パス>）");
-  const path = join(repoDir, "roles", `${role}.md`);
-  if (!existsSync(path)) throw new CrewError(`役 "${role}" の定義が無い: ${path}`);
-  return { name: role, path };
+  const loaded = loadRole(repoDir, role, profile);
+  return { name: role, path: write(role, loaded.text), permissionMode: loaded.permissionMode };
 }
