@@ -6,7 +6,8 @@ import { withDecisionLine } from "./decision.js";
 import { CrewError } from "./errors.js";
 import { CmuxLauncher } from "./launchers/cmux/launcher.js";
 import { createLogger } from "./log.js";
-import { loadProfile, resolveChoice } from "./profile/profile.js";
+import { checkProfile, formatCheck, initProfile } from "./profile/check.js";
+import { loadProfile, profilePath, PROFILE_ENV, resolveChoice } from "./profile/profile.js";
 import { loadRole } from "./roles.js";
 import { buildRequest } from "./templates.js";
 
@@ -156,6 +157,31 @@ program
       process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
     },
   );
+
+const profileCommand = program.command("profile").description("環境ごとの値（profile）を扱う");
+
+profileCommand
+  .command("check")
+  .description("役と雛形と部品の穴から profile に要る物を割り出し、欠けを全部挙げる")
+  .option("--profile <名前|パス>", "環境ごとの値（既定は環境変数 CREW_PROFILE）")
+  .action((options: { profile?: string }) => {
+    checkBuild({ repoDir, distDir });
+    const profile = loadProfile(options.profile);
+    const result = formatCheck(
+      checkProfile(repoDir, profile),
+      profilePath(options.profile ?? process.env[PROFILE_ENV] ?? ""),
+    );
+    process.stdout.write(result.text);
+    if (!result.ok) process.exitCode = 1;
+  });
+
+profileCommand
+  .command("init <名前>")
+  .description("見本の profile（profiles/example）を ~/.config/agent-crew/profiles/<名前>/ に写す")
+  .action((name: string) => {
+    const dest = initProfile(repoDir, name);
+    process.stdout.write(`${dest}\n`);
+  });
 
 try {
   await program.parseAsync();

@@ -1,6 +1,7 @@
 ---
 title: 計画
 description: 選ばれた案を、段に分ける（まだ実行しない）
+vars: ticket, topic, proposal, choice, notes?
 ---
 
 # 計画の依頼: {{topic}}

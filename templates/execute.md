@@ -1,6 +1,7 @@
 ---
 title: 実行
 description: 計画のとおりに作り、確かめ、記録を残す
+vars: ticket, topic, plan, answers, notes?
 ---
 
 # 実行の依頼: {{topic}}
