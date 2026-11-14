@@ -21,6 +21,8 @@ export default tseslint.config(
     files: ["test/**/*.ts"],
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off",
+      // 偽の物は本物と同じ async の形を持つが、中で待つ物が無い。
+      "@typescript-eslint/require-await": "off",
     },
   },
   {
