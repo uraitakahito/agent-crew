@@ -3,10 +3,34 @@
   "cwd": "~/projects/example",
   "permissionMode": "default",
   "models": [
-    { "id": "claude-opus-5-5", "display": "Opus 5.5" },
-    { "id": "claude-fable-5-2", "display": "Fable 5.2" },
-    { "id": "claude-sonnet-5-5", "display": "Sonnet 5.5" },
-    { "id": "claude-haiku-5-5", "display": "Haiku 5.5" }
+    {
+      "id": "claude-opus-5-5",
+      "display": "Opus 5.5"
+    },
+    {
+      "id": "claude-fable-5-2",
+      "display": "Fable 5.2"
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "display": "Sonnet 5.5"
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "display": "Haiku 5.5"
+    }
   ],
-  "efforts": ["low", "medium", "high", "xhigh", "max"]
+  "efforts": ["low", "medium", "high", "xhigh", "max"],
+  "values": {
+    "language": "日本語",
+    "tpm.address": "workspace:1",
+    "tpm.id": "00000000-0000-4000-8000-000000000001",
+    "devops.address": "workspace:2",
+    "messageCommand": "cmux agent message <宛先> --from \"<自分の名前>\" -- \"<文>\"",
+    "waitStatusCommand": "cmux set-status wait \"<何を待つか>\" --workspace <自分の workspace> --icon hourglass",
+    "clearStatusCommand": "cmux clear-status wait --workspace <自分の workspace>",
+    "issueTracker": "GitHub Issues",
+    "sharedEnvironment": "コンテナ・共有の開発環境",
+    "bannedTerms": "（無し）"
+  }
 }

@@ -24,6 +24,8 @@ export interface Profile {
   readonly permissionMode: string;
   readonly models: readonly ModelChoice[];
   readonly efforts: readonly string[];
+  /** 役の定義と雛形の穴（`{{名前}}`）に入れる値。 */
+  readonly values: Readonly<Record<string, string>>;
 }
 
 export const PROFILE_ENV = "CREW_PROFILE";
@@ -63,6 +65,8 @@ function need<T>(obj: Json, key: string, guard: (v: unknown) => v is T, what: st
 const isString = (v: unknown): v is string => typeof v === "string" && v !== "";
 const isStringArray = (v: unknown): v is string[] =>
   Array.isArray(v) && v.length > 0 && v.every(isString);
+const isValues = (v: unknown): v is Record<string, string> =>
+  isObject(v) && Object.values(v).every((x) => typeof x === "string");
 const isModels = (v: unknown): v is ModelChoice[] =>
   Array.isArray(v) &&
   v.length > 0 &&
@@ -86,6 +90,7 @@ export function parseProfile(text: string, dir: string, home = homedir()): Profi
     permissionMode: need(raw, "permissionMode", isString, "--permission-mode に渡す値"),
     models: need(raw, "models", isModels, "選べるモデルの id と表示名の一覧"),
     efforts: need(raw, "efforts", isStringArray, "選べる effort の段の一覧"),
+    values: need(raw, "values", isValues, "役の定義と雛形の穴に入れる値（文字列だけ）"),
   };
 }
 

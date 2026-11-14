@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { Command } from "commander";
 import { checkBuild, locations } from "./build-info.js";
-import { readRequest, requireDecision, resolveRoleFile } from "./commands/common.js";
+import { prepareRole, readRequest, requireDecision } from "./commands/common.js";
 import { withDecisionLine } from "./decision.js";
 import { CrewError } from "./errors.js";
 import { CmuxLauncher } from "./launchers/cmux/launcher.js";
@@ -57,7 +57,7 @@ addCommon(
     checkBuild({ repoDir, distDir });
     const profile = loadProfile(options.profile);
     const model = resolveChoice(profile, decision.model, decision.effort);
-    const role = resolveRoleFile(repoDir, options.role, options.roleFile);
+    const role = prepareRole(repoDir, profile, options.role, options.roleFile);
     const request =
       options.request === undefined
         ? undefined
@@ -68,7 +68,7 @@ addCommon(
       cwd: options.cwd ?? profile.cwd,
       model,
       effort: decision.effort,
-      permissionMode: profile.permissionMode,
+      permissionMode: role.permissionMode,
       roleFile: role.path,
       ...(request === undefined ? {} : { request }),
     });

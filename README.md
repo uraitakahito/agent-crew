@@ -26,6 +26,20 @@ bin/crew send --to <workspace> --model claude-haiku-5-5 --effort low --decided-b
 - 標準出力には結果（宛先の ID など）の JSON だけを出し、ログは標準エラーに出します。
 - build した `dist/` が今の commit と違えば、`pnpm run build` を打つよう言って止まります。
 
+## 役
+
+`roles/` に 1 役 1 ファイル。`crew launch --role <名前>` で起こします。
+
+| 名前       | 役                                                                                  |
+| ---------- | ----------------------------------------------------------------------------------- |
+| `tpm`      | Technical Program Manager。Product Manager の決定を作業に分け、ほかの役に振り分ける |
+| `devops`   | DevOps Engineer。共有の開発環境のビルド・デプロイ・整備と、その承認と順番           |
+| `engineer` | Software Engineer。解説・提案・計画・実行の 4 種類の仕事を受ける                    |
+
+- ファイルの頭（`---` の間）に書けるのは `title` と `permissionMode`（`profile` なら profile の値）だけです。モデルと effort は書きません（起こすときに渡す）。
+- 本文の `{{名前}}` は profile の `values` の値で、`{{> 部品}}` は `templates/partials/<部品>.md` で埋めます。埋まらない穴が 1 つでも在れば、名前を挙げて止まります。
+- 埋めた物は repo の外（`~/.local/state/agent-crew/roles/`）に書き、そのパスを `--append-system-prompt-file` に渡します。役の定義は起動のときに固定されるので、直した後は起こし直してください。
+
 ## 公開の repo です
 
 この repo に置くのは、どの環境でも同じ物だけです（役の定義・依頼の雛形・launcher）。
