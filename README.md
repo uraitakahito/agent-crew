@@ -40,6 +40,31 @@ bin/crew send --to <workspace> --model claude-haiku-5-5 --effort low --decided-b
 - 本文の `{{名前}}` は profile の `values` の値で、`{{> 部品}}` は `templates/partials/<部品>.md` で埋めます。埋まらない穴が 1 つでも在れば、名前を挙げて止まります。
 - 埋めた物は repo の外（`~/.local/state/agent-crew/roles/`）に書き、そのパスを `--append-system-prompt-file` に渡します。役の定義は起動のときに固定されるので、直した後は起こし直してください。
 
+## 依頼の雛形
+
+`templates/` に 4 つ。`--template <名前>` と `--var 鍵=値` で組み立てます（`crew render` で、起こさずに文だけを見られます）。
+
+| 名前      | 依頼の種類 | 要る `--var`                                                                                               |
+| --------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
+| `explain` | 解説       | `ticket`・`topic`・`question`                                                                              |
+| `propose` | 提案       | `ticket`・`topic`・`options`（案の数）                                                                     |
+| `plan`    | 計画       | `ticket`・`topic`・`proposal`（提案の URL）・`choice`（選んだ案）                                          |
+| `execute` | 実行       | `ticket`・`topic`・`plan`（計画の URL）・`answers`（決めてほしいことの答え。無ければ「無し（全部既定）」） |
+
+どれも `--var notes=…` で書き足しを渡せます。
+
+```sh
+bin/crew render --template plan --var ticket=<作業項目> --var topic="起点の URL の表示" \
+  --var proposal=<提案の URL> --var choice="案 3"
+bin/crew launch --role engineer --template execute --var ticket=<作業項目> --var topic=… --var plan=<計画の URL> \
+  --model claude-opus-5-5 --effort high --decided-by tpm
+```
+
+- 毎回同じ決まりは部品（`templates/partials/`）にして、雛形から `{{> 部品}}` で読み込みます。どの雛形にどの決まりが入るかは、試験（`test/templates.test.ts`）が一覧で持っています。
+- プロジェクト固有の決まりは、profile の `partials/project-rules.md` に書きます（部品は profile の `partials/` が先、無ければ repo の物）。
+- `{{?名前}}` は任意の穴です（値が無ければ空）。
+- 依頼の文の頭には、モデル・effort・決めた人の 1 行が入ります。`--reason <文>` で決めた理由も入れられます。
+
 ## 公開の repo です
 
 この repo に置くのは、どの環境でも同じ物だけです（役の定義・依頼の雛形・launcher）。

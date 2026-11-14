@@ -4,6 +4,7 @@ import { CrewError } from "../errors.js";
  * 雛形の穴埋め。書き方は 2 つだけ:
  *   {{名前}}      profile の values（と --var）の値に替える
  *   {{> 部品}}    部品のファイルの中身に替える（部品の中の穴も埋める）
+ *   {{?名前}}     値が在れば替え、無ければ空にする（書き足しの欄など、任意の物だけ）
  * 埋まらない穴が 1 つでも在れば、全部の名前を挙げて止まる（黙って空にしない）。
  */
 export interface RenderContext {
@@ -12,7 +13,7 @@ export interface RenderContext {
   readonly partial?: (name: string) => string | undefined;
 }
 
-const HOLE = /\{\{\s*(>?)\s*([A-Za-z][\w.-]*)\s*\}\}/g;
+const HOLE = /\{\{\s*([>?]?)\s*([A-Za-z][\w.-]*)\s*\}\}/g;
 const MAX_DEPTH = 5;
 
 export function render(text: string, context: RenderContext, source: string): string {
@@ -52,6 +53,7 @@ function expand(
       return expand(body.replace(/\n$/, ""), context, missing, missingPartials, depth + 1);
     }
     const value = context.values[name];
+    if (value === undefined && isPartial === "?") return "";
     if (value === undefined) {
       missing.add(name);
       return whole;

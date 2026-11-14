@@ -9,6 +9,7 @@ export interface DecisionOptions {
   readonly model?: string;
   readonly effort?: string;
   readonly decidedBy?: string;
+  readonly reason?: string;
 }
 
 /**
@@ -34,7 +35,12 @@ export function requireDecision(options: DecisionOptions): Decision {
   if (!isDecider(options.decidedBy)) {
     throw new CrewError(`--decided-by は pm か tpm（渡されたのは "${options.decidedBy}"）`);
   }
-  return { model: options.model, effort: options.effort, decidedBy: options.decidedBy };
+  return {
+    model: options.model,
+    effort: options.effort,
+    decidedBy: options.decidedBy,
+    ...(options.reason === undefined ? {} : { reason: options.reason }),
+  };
 }
 
 /** 依頼の文をファイルから読む（`-` なら標準入力）。 */

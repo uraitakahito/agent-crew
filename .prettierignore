@@ -3,3 +3,5 @@ node_modules
 pnpm-lock.yaml
 coverage
 .vitest
+# 雛形を組み立てた正の文（試験が書く。手でも prettier でも直さない）
+test/golden

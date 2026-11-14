@@ -92,3 +92,17 @@ describe("古い dist で動かさない", () => {
     expect(() => checkBuild(dist(), () => undefined)).not.toThrow();
   });
 });
+
+describe("決めた理由", () => {
+  it("--reason を渡せば、決めた人の後ろに括弧で入れる", () => {
+    const decision = requireDecision({
+      model: "claude-opus-5-5",
+      effort: "high",
+      decidedBy: "tpm",
+      reason: "段が多いため",
+    });
+    expect(decisionLine(decision)).toBe(
+      "- モデル: claude-opus-5-5 ／ effort: high ／ 決めた人: TPM 役（段が多いため）",
+    );
+  });
+});

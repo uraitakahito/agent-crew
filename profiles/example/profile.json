@@ -24,13 +24,17 @@
   "values": {
     "language": "日本語",
     "tpm.address": "workspace:1",
-    "tpm.id": "00000000-0000-4000-8000-000000000001",
     "devops.address": "workspace:2",
     "messageCommand": "cmux agent message <宛先> --from \"<自分の名前>\" -- \"<文>\"",
     "waitStatusCommand": "cmux set-status wait \"<何を待つか>\" --workspace <自分の workspace> --icon hourglass",
     "clearStatusCommand": "cmux clear-status wait --workspace <自分の workspace>",
     "issueTracker": "GitHub Issues",
     "sharedEnvironment": "コンテナ・共有の開発環境",
-    "bannedTerms": "（無し）"
+    "bannedTerms": "（無し）",
+    "openCommand": "cmux open <URL> --workspace <TPM 役の UUID>",
+    "openHereCommand": "cmux open <URL>",
+    "openOk": "OK urls=1",
+    "userWaitStatusCommand": "cmux set-status user-wait \"<何を待つか>\" --workspace <自分の workspace> --icon hourglass",
+    "mainCheckoutUpdate": "git pull --ff-only"
   }
 }
