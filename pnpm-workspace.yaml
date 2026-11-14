@@ -1,0 +1,7 @@
+# npm の `overrides` の置き場。pnpm 11 は package.json の `overrides` を読まない (書いても黙って無視する)。
+overrides:
+  # minimatch 10 系は GHSA-g3hv-75wg-m249 (globparts の増幅による DoS) の対象で、修正は 11.0.1 から。
+  # 要求元の eslint・@eslint/config-array・@typescript-eslint/typescript-estree の最新版が 10 系を求める。
+  # 11 に上げても lint の結果 (ignores の効き方を含む) は変わらなかった。
+  # 外す条件: 要求元が 11.0.1 以上を求める版を出したとき。確かめ方: pnpm why minimatch
+  minimatch: "^11.0.1"

@@ -16,3 +16,16 @@ Claude Code の役（Technical Program Manager・DevOps Engineer・Software Engi
 ## ライセンス
 
 [MIT](LICENSE)
+
+## 開発
+
+Node 26 以上と pnpm 11 が要ります（版は `.nvmrc` と `package.json` の `packageManager`）。
+
+```sh
+pnpm install
+pnpm run check   # audit → typecheck → lint → format:check → test → build → check:private
+```
+
+`check:private` は、本物の値の混入を形（UUID・利用者の名前を含む絶対パス・メールアドレス・課題管理の URL とキー・claude.ai のリンク）で探します。
+手元の機械では、repo の外の `~/.config/agent-crew/private-terms.txt`（1 行に 1 語）に書いた語も literal で照らします（置き場は環境変数 `AGENT_CREW_PRIVATE_TERMS` で替えられます）。
+CI は、ファイルに加えて PR の題・本文・commit の文も照らします。

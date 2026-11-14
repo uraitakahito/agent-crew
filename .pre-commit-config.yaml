@@ -1,0 +1,7 @@
+# pre-commit (https://pre-commit.com) を使う人のための gitleaks の hook。
+# 使い方: pre-commit install。CI でも同じ gitleaks が走る (.github/workflows/ci.yaml)。
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

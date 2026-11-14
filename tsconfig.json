@@ -1,0 +1,66 @@
+{
+  "compilerOptions": {
+    /*
+     * Type Checking
+     * https://www.typescriptlang.org/tsconfig/#Type_Checking_6248
+     */
+    // Enable all strict type-checking options
+    "strict": true,
+    // Add undefined to indexed-access results (`arr[i]` -> `T | undefined`)
+    "noUncheckedIndexedAccess": true,
+    // Ensure overriding members in derived classes are marked with an override modifier
+    "noImplicitOverride": true,
+    // Report errors for fallthrough cases in switch statements
+    "noFallthroughCasesInSwitch": true,
+    // Require the bracket notation for accessing properties with index signatures
+    "noPropertyAccessFromIndexSignature": true,
+    // Distinguish `prop?: T` (may be absent) from `prop: T | undefined`
+    "exactOptionalPropertyTypes": true,
+
+    /*
+     * Modules
+     * https://www.typescriptlang.org/tsconfig/#Modules_6244
+     */
+    // NodeNext: crew runs under node straight from dist/, not via a bundler.
+    "module": "NodeNext",
+    // Match the resolver to `module: NodeNext`
+    "moduleResolution": "NodeNext",
+    // Allow `import` of `.json` files
+    "resolveJsonModule": true,
+
+    /*
+     * Emit
+     * https://www.typescriptlang.org/tsconfig/#Emit_6246
+     */
+    // Type-check only by default; the emit pass uses `tsconfig.build.json`.
+    "noEmit": true,
+
+    /*
+     * Interop Constraints
+     * https://www.typescriptlang.org/tsconfig/#Interop_Constraints_6252
+     */
+    // Each `import`/`export` statement maps 1:1 to an emitted statement
+    // (type-only imports must use `import type`).
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    // Ensure each file can be safely transpiled in isolation
+    "isolatedModules": true,
+    // Ensure that casing is correct in imports
+    "forceConsistentCasingInFileNames": true,
+    // Skip type checking of declaration files from node_modules
+    "skipLibCheck": true,
+
+    /*
+     * Language and Environment
+     * https://www.typescriptlang.org/tsconfig/#Language_and_Environment_6254
+     */
+    "target": "ES2022",
+    // No DOM: crew runs only under node.
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  // Root config covers source, tests, and *.config.ts so editors and the
+  // typecheck script see everything; the build config narrows to src/**.
+  "include": ["src/**/*", "test/**/*", "*.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}
