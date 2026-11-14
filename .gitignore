@@ -1,0 +1,22 @@
+# 依存と生成物
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vitest/
+
+# ログ
+*.log
+
+# 本物の値は repo の外（~/.config/agent-crew/）に置く。誤って repo の中に置いたときの保険。
+profiles/*
+!profiles/example/
+
+# 環境の値
+.env
+.env.*
+
+# エディタと OS
+.DS_Store
+.vscode/
+.idea/
