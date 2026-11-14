@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// 入口。build した dist/cli.js を呼ぶ（古い dist/ なら cli.js が止まる）。
+import("../dist/cli.js");
